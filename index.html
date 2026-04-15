@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logistrack Core Enterprise</title>
+    <title>Logistrack Core Enterprise - WMS Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -12,14 +12,24 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #F8F9FC; color: #1A202C; }
         .chakra-card { @apply bg-white rounded-[24px] shadow-sm border border-gray-100 transition-all duration-200; }
         
-        /* Placeholders en surbrillance bleue/gris et champ éditable */
-        .input-chakra { @apply w-full bg-blue-50/50 border-2 border-transparent rounded-xl p-3 text-sm font-semibold outline-none transition-all; }
-        .input-chakra::placeholder { color: #94a3b8; }
-        .input-chakra:focus { @apply border-blue-500 bg-white shadow-sm; }
+        /* Input Premium & Smooth */
+        .input-chakra { 
+            @apply w-full bg-slate-50 border-2 border-slate-100 rounded-xl p-3 text-sm font-semibold outline-none transition-all duration-300;
+            color: #1e293b;
+        }
+        .input-chakra:hover { @apply border-blue-200 bg-blue-50/30; }
+        .input-chakra:focus { 
+            @apply border-blue-500 bg-white ring-4 ring-blue-500/10 shadow-sm;
+            transform: translateY(-1px);
+        }
         
-        .label-chakra { @apply text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 block ml-1; }
+        .label-chakra { @apply text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5 block ml-1; }
         .badge { @apply px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter; }
         
+        /* Animation Formulaire */
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .animate-modal { animation: slideUp 0.4s ease-out; }
+
         @media print { .no-print { display: none !important; } body { background: white; } }
         ::-webkit-scrollbar { width: 6px; }
         ::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 10px; }
@@ -30,7 +40,7 @@
     <header class="h-20 bg-white border-b border-gray-100 px-8 flex justify-between items-center sticky top-0 z-[60] no-print">
         <div class="flex items-center gap-4">
             <div class="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center text-white shadow-lg shadow-blue-100">
-                <i data-lucide="shield-check" class="w-6 h-6"></i>
+                <i data-lucide="package" class="w-6 h-6"></i>
             </div>
             <div>
                 <h1 class="text-lg font-extrabold tracking-tight leading-none">LOGISTRACK <span class="text-blue-600 font-black">CORE</span></h1>
@@ -46,42 +56,36 @@
     </header>
 
     <main class="flex-1 p-4 lg:p-10 max-w-[1600px] mx-auto w-full space-y-8 no-print">
-        
         <section class="grid grid-cols-1 md:grid-cols-4 gap-6">
             <div class="chakra-card p-6 border-l-4 border-l-blue-500">
-                <p class="text-[10px] font-bold text-gray-400 uppercase">Poids Net Livré</p>
+                <p class="text-[10px] font-bold text-gray-400 uppercase">Stock Actuel (Net)</p>
                 <div class="flex items-baseline gap-2"><span id="stat-net" class="text-2xl font-black italic">0</span><span class="text-xs font-bold text-gray-400">KG</span></div>
             </div>
             <div class="chakra-card p-6 border-l-4 border-l-emerald-500">
-                <p class="text-[10px] font-bold text-gray-400 uppercase">Net à Payer Total</p>
-                <div class="flex items-baseline gap-2"><span id="stat-paid" class="text-2xl font-black text-emerald-600">0</span><span class="text-xs font-bold text-emerald-400">KG</span></div>
+                <p class="text-[10px] font-bold text-gray-400 uppercase">Total Vendu</p>
+                <div class="flex items-baseline gap-2"><span id="stat-sold" class="text-2xl font-black text-emerald-600">0</span><span class="text-xs font-bold text-emerald-400">KG</span></div>
             </div>
             <div class="chakra-card p-6 border-l-4 border-l-amber-500">
                 <p class="text-[10px] font-bold text-gray-400 uppercase">Réfraction Moyenne</p>
                 <p id="stat-ref" class="text-2xl font-black text-amber-600">0%</p>
             </div>
             <div class="chakra-card p-6 border-l-4 border-l-slate-900">
-                <p class="text-[10px] font-bold text-gray-400 uppercase">Camions Réceptionnés</p>
+                <p class="text-[10px] font-bold text-gray-400 uppercase">Camions Totaux</p>
                 <p id="stat-trucks" class="text-2xl font-black">0</p>
             </div>
         </section>
 
         <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div class="chakra-card p-6 lg:col-span-2">
-                <h3 class="text-xs font-black text-gray-400 uppercase mb-4 tracking-widest">Évolution des Réceptions</h3>
-                <canvas id="mainChart" height="100"></canvas>
-            </div>
-            <div class="chakra-card p-6 flex flex-col justify-center">
-                <h3 class="text-xs font-black text-gray-400 uppercase mb-4 tracking-widest text-center">Répartition Qualité</h3>
-                <canvas id="qualityChart"></canvas>
-            </div>
+            <div class="chakra-card p-6"><h3 class="text-xs font-black text-gray-400 uppercase mb-4 tracking-widest text-center">Remplissage Blocs</h3><canvas id="storageChart" height="200"></canvas></div>
+            <div class="chakra-card p-6"><h3 class="text-xs font-black text-gray-400 uppercase mb-4 tracking-widest text-center">État Stock</h3><canvas id="salesChart" height="200"></canvas></div>
+            <div class="chakra-card p-6"><h3 class="text-xs font-black text-gray-400 uppercase mb-4 tracking-widest text-center">Qualité</h3><canvas id="qualityChart" height="200"></canvas></div>
         </section>
 
         <section class="chakra-card overflow-hidden">
             <div class="p-6 border-b border-gray-50 flex flex-wrap justify-between items-center gap-4">
                 <h2 class="font-black text-slate-800 uppercase text-sm tracking-widest">Registre des Bordereaux</h2>
                 <div class="relative w-full md:w-80">
-                    <input type="text" id="search" oninput="renderTable()" placeholder="Chercher AC ou Fournisseur..." class="w-full pl-10 pr-4 py-2.5 bg-blue-50/50 rounded-xl text-xs font-bold border-none outline-none">
+                    <input type="text" id="search" oninput="renderTable()" placeholder="Chercher AC, Fournisseur..." class="w-full pl-10 pr-4 py-2.5 bg-blue-50/50 rounded-xl text-xs font-bold border-none outline-none">
                     <i data-lucide="search" class="w-4 h-4 absolute left-3 top-2.5 text-gray-300"></i>
                 </div>
             </div>
@@ -90,10 +94,10 @@
                     <thead class="bg-gray-50/50 text-[9px] font-black text-gray-400 uppercase tracking-[0.2em] border-b">
                         <tr>
                             <th class="px-6 py-4">Identification</th>
-                            <th class="px-6 py-4">Logistique</th>
+                            <th class="px-6 py-4">Logistique & Emplacement</th>
                             <th class="px-6 py-4 text-center">Analyses</th>
-                            <th class="px-6 py-4">Poids Net Livré</th>
-                            <th class="px-6 py-4">Net à Payer</th>
+                            <th class="px-6 py-4">Poids Net</th>
+                            <th class="px-6 py-4">Statut</th>
                             <th class="px-6 py-4 text-center">Actions</th>
                         </tr>
                     </thead>
@@ -104,48 +108,49 @@
     </main>
 
     <div id="modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-[100] hidden flex items-center justify-center p-0 md:p-6 no-print">
-        <div class="bg-white w-full max-w-5xl h-full md:h-auto md:max-h-[95vh] md:rounded-[40px] flex flex-col shadow-2xl overflow-hidden">
-            <div class="p-8 border-b border-gray-100 flex justify-between items-center bg-white">
+        <div class="bg-white w-full max-w-6xl h-full md:h-auto md:max-h-[95vh] md:rounded-[40px] flex flex-col shadow-2xl overflow-hidden animate-modal">
+            <div class="p-8 border-b border-gray-100 flex justify-between items-center">
                 <div>
-                    <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight">Nouvelle Entrée</h2>
-                    <p class="text-[10px] text-blue-600 font-black uppercase tracking-widest">Calcul intelligent des réfractions</p>
+                    <h2 class="text-2xl font-black text-slate-800 uppercase tracking-tight italic">Nouvelle Saisie</h2>
+                    <p class="text-[10px] text-blue-600 font-black uppercase tracking-widest">Calcul automatique des poids en temps réel</p>
                 </div>
                 <button onclick="closeForm()" class="p-3 bg-gray-50 text-gray-400 rounded-2xl hover:text-red-500 transition-all"><i data-lucide="x"></i></button>
             </div>
 
             <form id="mainForm" class="p-8 overflow-y-auto space-y-8">
                 <input type="hidden" id="editId">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-10">
                     <div class="space-y-4">
-                        <h3 class="text-xs font-black text-slate-400 uppercase border-b pb-2 tracking-widest">1. Logistique</h3>
+                        <h3 class="text-[11px] font-black text-blue-500 uppercase border-b border-blue-100 pb-2 tracking-widest">1. Identification</h3>
                         <div>
                             <label class="label-chakra">N° Connaissement</label>
-                            <input type="text" id="f_ac" placeholder="AC-XXXX" class="input-chakra" required>
+                            <input type="text" id="f_ac" class="input-chakra" value="AC-" oninput="forceAC(this)" required>
                         </div>
-                        <div><label class="label-chakra">Fournisseur</label><input type="text" id="f_fourn" placeholder="Saisir fournisseur" class="input-chakra" required></div>
-                        <div><label class="label-chakra">Transporteur</label><input type="text" id="f_camion" placeholder="Matricule / Chauffeur" class="input-chakra"></div>
+                        <div><label class="label-chakra">Fournisseur</label><input type="text" id="f_fourn" class="input-chakra" placeholder="Ex: GNAOURE..." required></div>
+                        <div><label class="label-chakra">Transporteur</label><input type="text" id="f_camion" class="input-chakra" placeholder="Matricule"></div>
                     </div>
+
                     <div class="space-y-4">
-                        <h3 class="text-xs font-black text-slate-400 uppercase border-b pb-2 tracking-widest">2. Pesage (KG)</h3>
+                        <h3 class="text-[11px] font-black text-blue-500 uppercase border-b border-blue-100 pb-2 tracking-widest">2. Pesage</h3>
                         <div class="grid grid-cols-2 gap-4">
-                            <div><label class="label-chakra">Poids Brut</label><input type="number" id="f_brut" placeholder="0" class="input-chakra" oninput="calcNet()" required></div>
-                            <div><label class="label-chakra">Tare</label><input type="number" id="f_tare" placeholder="0" class="input-chakra" oninput="calcNet()" required></div>
+                            <div><label class="label-chakra">Poids Brut (kg)</label><input type="number" id="f_brut" class="input-chakra" oninput="calcNet()" required></div>
+                            <div><label class="label-chakra">Tare (kg)</label><input type="number" id="f_tare" class="input-chakra" oninput="calcNet()" required></div>
                         </div>
-                        <div class="bg-blue-600 p-4 rounded-2xl text-center shadow-lg">
-                            <p class="text-[9px] font-black text-blue-100 uppercase mb-1">Poids Net Livré</p>
-                            <p id="f_net_display" class="text-2xl font-black text-white">0 kg</p>
+                        <div class="bg-slate-50 border border-slate-100 p-4 rounded-2xl">
+                            <p class="text-[9px] font-black text-slate-400 uppercase mb-1">Net Livré (Resultat)</p>
+                            <p id="f_net_livre_display" class="text-xl font-black text-slate-800">0 kg</p>
                         </div>
-                        <div class="bg-emerald-500 p-4 rounded-2xl text-center shadow-lg">
-                            <p class="text-[9px] font-black text-emerald-100 uppercase mb-1">Net à Payer Final</p>
+                        <div class="bg-blue-600 p-4 rounded-2xl shadow-lg shadow-blue-200">
+                            <p class="text-[9px] font-black text-blue-100 uppercase mb-1">Poids Net à Payer</p>
                             <p id="f_pay_display" class="text-2xl font-black text-white">0 kg</p>
                         </div>
                     </div>
+
                     <div class="space-y-4">
-                        <h3 class="text-xs font-black text-slate-400 uppercase border-b pb-2 tracking-widest">3. Qualité & Réfraction</h3>
-                        <div><label class="label-chakra">Taux de Réfraction (%)</label><input type="number" step="0.01" id="f_refraction" placeholder="Saisie taux" class="input-chakra" oninput="calcNet()" value="0"></div>
-                        <div><label class="label-chakra">Déchets (%)</label><input type="number" step="0.1" id="f_dechets" placeholder="0.0" class="input-chakra" value="0"></div>
+                        <h3 class="text-[11px] font-black text-blue-500 uppercase border-b border-blue-100 pb-2 tracking-widest">3. Qualité</h3>
+                        <div><label class="label-chakra">Taux Réfraction (%)</label><input type="number" step="0.01" id="f_refraction" class="input-chakra" oninput="calcNet()" value="0"></div>
                         <div>
-                            <label class="label-chakra">Grade</label>
+                            <label class="label-chakra">Grade Qualité</label>
                             <select id="f_grade" class="input-chakra">
                                 <option value="G1">GRADE 1</option>
                                 <option value="G2" selected>GRADE 2</option>
@@ -153,10 +158,32 @@
                             </select>
                         </div>
                     </div>
+
+                    <div class="space-y-4">
+                        <h3 class="text-[11px] font-black text-blue-500 uppercase border-b border-blue-100 pb-2 tracking-widest">4. Rangement</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="label-chakra">Bloc</label>
+                                <select id="f_bloc" class="input-chakra">
+                                    <option value="A">BLOC A</option><option value="B">BLOC B</option>
+                                    <option value="C">BLOC C</option><option value="D">BLOC D</option><option value="E">BLOC E</option>
+                                </select>
+                            </div>
+                            <div><label class="label-chakra">Ligne</label><input type="number" id="f_ligne" placeholder="0" class="input-chakra"></div>
+                        </div>
+                        <div>
+                            <label class="label-chakra">État du Lot</label>
+                            <select id="f_statut" class="input-chakra">
+                                <option value="En Stock">📦 EN STOCK</option>
+                                <option value="Vendu">✅ VENDU</option>
+                            </select>
+                        </div>
+                    </div>
                 </div>
-                <div class="flex gap-4 pt-6 border-t">
-                    <button type="button" onclick="closeForm()" class="flex-1 py-4 text-gray-400 font-bold uppercase text-[10px] tracking-widest">Annuler</button>
-                    <button type="submit" class="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-xl shadow-blue-200 hover:bg-slate-900 transition-all">Enregistrer le lot</button>
+
+                <div class="flex gap-4 pt-8 border-t">
+                    <button type="button" onclick="closeForm()" class="flex-1 py-4 text-slate-400 font-bold uppercase text-[10px] hover:text-red-500 transition-all">Annuler</button>
+                    <button type="submit" class="flex-[2] py-4 bg-blue-600 text-white rounded-2xl font-black uppercase text-xs tracking-widest hover:bg-slate-900 hover:scale-[1.02] transition-all shadow-xl shadow-blue-200">Valider l'entrée</button>
                 </div>
             </form>
         </div>
@@ -166,54 +193,79 @@
 
     <script>
         let db = JSON.parse(localStorage.getItem('logistrack_v11')) || [];
-        let mainChart, qualityChart;
+        let storageChart, salesChart, qualityChart;
+
+        // Force le préfixe AC
+        function forceAC(el) {
+            if (!el.value.startsWith('AC-')) {
+                el.value = 'AC-' + el.value.replace(/^A?C?-?/, '');
+            }
+        }
 
         function initCharts() {
-            const ctx1 = document.getElementById('mainChart').getContext('2d');
-            mainChart = new Chart(ctx1, {
-                type: 'line',
-                data: { labels: [], datasets: [{ label: 'Poids Net Livré', data: [], borderColor: '#2563eb', tension: 0.4, fill: true, backgroundColor: 'rgba(37, 99, 235, 0.05)' }] },
+            storageChart = new Chart(document.getElementById('storageChart'), {
+                type: 'bar',
+                data: { labels: ['A', 'B', 'C', 'D', 'E'], datasets: [{ label: 'Stock (kg)', data: [0,0,0,0,0], backgroundColor: '#2563eb', borderRadius: 10 }] },
                 options: { plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
             });
 
-            const ctx2 = document.getElementById('qualityChart').getContext('2d');
-            qualityChart = new Chart(ctx2, {
+            salesChart = new Chart(document.getElementById('salesChart'), {
                 type: 'doughnut',
-                data: { labels: ['G1', 'G2', 'SG'], datasets: [{ data: [0, 0, 0], backgroundColor: ['#f59e0b', '#64748b', '#ef4444'] }] },
-                options: { cutout: '75%', plugins: { legend: { position: 'bottom', labels: { font: { weight: 'bold', size: 10 } } } } }
+                data: { labels: ['En Stock', 'Vendu'], datasets: [{ data: [0,0], backgroundColor: ['#10b981', '#f43f5e'] }] },
+                options: { cutout: '75%' }
             });
+
+            qualityChart = new Chart(document.getElementById('qualityChart'), {
+                type: 'pie',
+                data: { labels: ['G1', 'G2', 'SG'], datasets: [{ data: [0,0,0], backgroundColor: ['#f59e0b', '#64748b', '#ef4444'] }] }
+            });
+        }
+
+        // Calculs de Poids Optimisés
+        function calcNet() {
+            const brut = parseFloat(document.getElementById('f_brut').value) || 0;
+            const tare = parseFloat(document.getElementById('f_tare').value) || 0;
+            const ref = parseFloat(document.getElementById('f_refraction').value) || 0;
+            
+            const netLivre = brut - tare;
+            const paid = Math.round(netLivre - (netLivre * (ref / 100)));
+            
+            document.getElementById('f_net_livre_display').innerText = netLivre.toLocaleString() + ' kg';
+            document.getElementById('f_pay_display').innerText = paid.toLocaleString() + ' kg';
+            
+            return { netLivre, paid };
         }
 
         function renderTable() {
             const body = document.getElementById('table-body');
-            const query = document.getElementById('search').value.toLowerCase();
+            const q = document.getElementById('search').value.toLowerCase();
             body.innerHTML = '';
-            let filtered = db.filter(o => o.fourn.toLowerCase().includes(query) || o.ac.toLowerCase().includes(query));
+            const filtered = db.filter(o => o.fourn.toLowerCase().includes(q) || o.ac.toLowerCase().includes(q));
 
             filtered.forEach(o => {
+                const statusColor = o.statut === 'Vendu' ? 'bg-red-50 text-red-600' : 'bg-emerald-50 text-emerald-600';
                 body.innerHTML += `
-                    <tr class="group border-b border-gray-50">
+                    <tr class="group border-b border-gray-50 ${o.statut === 'Vendu' ? 'opacity-60' : ''}">
                         <td class="px-6 py-5">
-                            <div class="text-[9px] text-gray-400 mb-1">${o.date}</div>
-                            <div class="text-slate-800 font-black">${o.ac}</div>
+                            <div class="text-[9px] text-gray-400 uppercase">${o.date}</div>
+                            <div class="text-slate-800 font-black tracking-tight">${o.ac}</div>
                         </td>
                         <td class="px-6 py-5">
-                            <div class="text-blue-600 font-black uppercase">${o.fourn}</div>
-                            <div class="text-[10px] text-gray-400 uppercase font-bold">${o.camion}</div>
+                            <div class="text-blue-600 font-black">${o.fourn}</div>
+                            <div class="text-[10px] text-slate-400 font-bold uppercase tracking-widest italic">📍 BLOC ${o.bloc} / LIGNE ${o.ligne || '?'}</div>
                         </td>
                         <td class="px-6 py-5 text-center">
-                            <div class="flex flex-col gap-1 items-center">
-                                <span class="badge bg-amber-50 text-amber-600">Ref: ${o.refraction}%</span>
-                                <span class="badge bg-gray-50 text-gray-400">G: ${o.grade}</span>
-                            </div>
+                            <span class="badge bg-amber-50 text-amber-600">Ref: ${o.refraction}%</span>
+                            <span class="badge bg-slate-100 text-slate-500">${o.grade}</span>
                         </td>
-                        <td class="px-6 py-5 font-black text-slate-900">${o.net.toLocaleString()} kg</td>
-                        <td class="px-6 py-5 font-black text-emerald-600">${o.paid.toLocaleString()} kg</td>
+                        <td class="px-6 py-5 font-black text-slate-900">${o.paid.toLocaleString()} kg</td>
+                        <td class="px-6 py-5"><span class="badge ${statusColor}">${o.statut}</span></td>
                         <td class="px-6 py-5">
-                            <div class="flex justify-center gap-1 opacity-20 group-hover:opacity-100 transition-opacity">
-                                <button onclick="printTicket('${o.id}')" class="p-2 text-slate-400 hover:text-blue-600"><i data-lucide="printer" class="w-4 h-4"></i></button>
-                                <button onclick="editEntry('${o.id}')" class="p-2 text-slate-400 hover:text-blue-600"><i data-lucide="edit-3" class="w-4 h-4"></i></button>
-                                <button onclick="deleteEntry('${o.id}')" class="p-2 text-slate-400 hover:text-red-600"><i data-lucide="trash-2" class="w-4 h-4"></i></button>
+                            <div class="flex justify-center gap-1 opacity-20 group-hover:opacity-100 transition-all">
+                                ${o.statut !== 'Vendu' ? `<button onclick="markSold('${o.id}')" class="p-2 text-emerald-500 hover:scale-125"><i data-lucide="check-circle"></i></button>` : ''}
+                                <button onclick="printTicket('${o.id}')" class="p-2 text-slate-400 hover:text-blue-600"><i data-lucide="printer"></i></button>
+                                <button onclick="editEntry('${o.id}')" class="p-2 text-slate-400 hover:text-blue-600"><i data-lucide="edit-3"></i></button>
+                                <button onclick="deleteEntry('${o.id}')" class="p-2 text-slate-400 hover:text-red-600"><i data-lucide="trash-2"></i></button>
                             </div>
                         </td>
                     </tr>
@@ -223,41 +275,27 @@
             lucide.createIcons();
         }
 
-        function calcNet() {
-            const brut = parseFloat(document.getElementById('f_brut').value) || 0;
-            const tare = parseFloat(document.getElementById('f_tare').value) || 0;
-            const refTaux = parseFloat(document.getElementById('f_refraction').value) || 0;
-            const net = brut - tare;
-            const paid = Math.round(net - (net * (refTaux / 100)));
-
-            document.getElementById('f_net_display').innerText = net.toLocaleString() + ' kg';
-            document.getElementById('f_pay_display').innerText = paid.toLocaleString() + ' kg';
-            return { net, paid };
-        }
-
         function updateStats(data) {
-            const totalNet = data.reduce((s, o) => s + o.net, 0);
-            const totalPaid = data.reduce((s, o) => s + o.paid, 0);
-            const avgRef = data.length ? (data.reduce((s, o) => s + parseFloat(o.refraction), 0) / data.length).toFixed(2) : 0;
-
-            document.getElementById('stat-net').innerText = totalNet.toLocaleString();
-            document.getElementById('stat-paid').innerText = totalPaid.toLocaleString();
-            document.getElementById('stat-ref').innerText = avgRef + '%';
+            const currentStock = data.filter(o => o.statut === 'En Stock').reduce((s,o) => s + o.paid, 0);
+            const totalSold = data.filter(o => o.statut === 'Vendu').reduce((s,o) => s + o.paid, 0);
+            document.getElementById('stat-net').innerText = currentStock.toLocaleString();
+            document.getElementById('stat-sold').innerText = totalSold.toLocaleString();
             document.getElementById('stat-trucks').innerText = data.length;
 
-            mainChart.data.labels = data.slice(0,10).reverse().map(o => o.ac);
-            mainChart.data.datasets[0].data = data.slice(0,10).reverse().map(o => o.net);
-            mainChart.update();
+            const blocData = ['A','B','C','D','E'].map(b => data.filter(o => o.bloc === b && o.statut === 'En Stock').reduce((s,o) => s + o.paid, 0));
+            storageChart.data.datasets[0].data = blocData; storageChart.update();
+            salesChart.data.datasets[0].data = [data.filter(o=>o.statut==='En Stock').length, data.filter(o=>o.statut==='Vendu').length]; salesChart.update();
+            qualityChart.data.datasets[0].data = [data.filter(o=>o.grade==='G1').length, data.filter(o=>o.grade==='G2').length, data.filter(o=>o.grade==='SG').length]; qualityChart.update();
+        }
 
-            const grades = [data.filter(o=>o.grade=='G1').length, data.filter(o=>o.grade=='G2').length, data.filter(o=>o.grade=='SG').length];
-            qualityChart.data.datasets[0].data = grades;
-            qualityChart.update();
+        function markSold(id) {
+            const idx = db.findIndex(x => x.id == id);
+            if(idx > -1) { db[idx].statut = 'Vendu'; save(); }
         }
 
         function openForm(id = null) {
             document.getElementById('mainForm').reset();
             document.getElementById('editId').value = id || '';
-            
             if(id) {
                 const o = db.find(x => x.id == id);
                 document.getElementById('f_ac').value = o.ac;
@@ -266,14 +304,14 @@
                 document.getElementById('f_brut').value = o.brut;
                 document.getElementById('f_tare').value = o.tare;
                 document.getElementById('f_refraction').value = o.refraction;
-                document.getElementById('f_dechets').value = o.dechets;
                 document.getElementById('f_grade').value = o.grade;
-                calcNet();
+                document.getElementById('f_bloc').value = o.bloc;
+                document.getElementById('f_ligne').value = o.ligne;
+                document.getElementById('f_statut').value = o.statut;
             } else {
-                // Suggère le préfixe AC- mais laisse l'utilisateur écrire
-                const nextNum = db.length > 0 ? (parseInt(db[0].ac.replace('AC-', '')) + 1).toString().padStart(4, '0') : "0001";
-                document.getElementById('f_ac').value = `AC-${nextNum}`;
+                document.getElementById('f_ac').value = 'AC-';
             }
+            calcNet();
             document.getElementById('modal').classList.remove('hidden');
         }
 
@@ -281,7 +319,7 @@
 
         document.getElementById('mainForm').onsubmit = (e) => {
             e.preventDefault();
-            const { net, paid } = calcNet();
+            const { netLivre, paid } = calcNet();
             const entry = {
                 id: document.getElementById('editId').value || Date.now(),
                 ac: document.getElementById('f_ac').value.toUpperCase(),
@@ -290,47 +328,41 @@
                 camion: document.getElementById('f_camion').value.toUpperCase(),
                 brut: parseFloat(document.getElementById('f_brut').value),
                 tare: parseFloat(document.getElementById('f_tare').value),
-                net, paid,
+                net: netLivre, paid,
                 refraction: document.getElementById('f_refraction').value,
-                dechets: document.getElementById('f_dechets').value,
-                grade: document.getElementById('f_grade').value
+                grade: document.getElementById('f_grade').value,
+                bloc: document.getElementById('f_bloc').value,
+                ligne: document.getElementById('f_ligne').value,
+                statut: document.getElementById('f_statut').value
             };
-
             const idx = db.findIndex(x => x.id == entry.id);
             if(idx > -1) db[idx] = entry; else db.unshift(entry);
-
-            localStorage.setItem('logistrack_v11', JSON.stringify(db));
-            closeForm();
-            renderTable();
+            save(); closeForm();
         };
 
-        function deleteEntry(id) { if(confirm("Supprimer?")) { db = db.filter(x => x.id != id); localStorage.setItem('logistrack_v11', JSON.stringify(db)); renderTable(); } }
+        function save() { localStorage.setItem('logistrack_v11', JSON.stringify(db)); renderTable(); }
+        function deleteEntry(id) { if(confirm("Supprimer?")) { db = db.filter(x => x.id != id); save(); } }
         function editEntry(id) { openForm(id); }
 
         function printTicket(id) {
             const o = db.find(x => x.id == id);
-            const printZone = document.getElementById('print-zone');
-            printZone.innerHTML = `
-                <div style="border: 2px solid black; padding: 25px; width: 420px; font-family: monospace;">
-                    <h2 style="text-align: center;">TICKET RÉCEPTION</h2>
-                    <p style="text-align: center; font-size: 1.5em;"><strong>${o.ac}</strong></p>
-                    <hr>
-                    <p>Date: ${o.date} | Fournisseur: ${o.fourn}</p>
-                    <p>Transport: ${o.camion}</p>
-                    <hr>
+            document.getElementById('print-zone').innerHTML = `
+                <div style="border: 2px solid black; padding: 20px; width: 350px; font-family: monospace;">
+                    <h2 style="text-align:center">TICKET RÉCEPTION</h2>
+                    <p style="text-align:center; font-size:1.4em"><strong>${o.ac}</strong></p><hr>
+                    <p>Date: ${o.date} | Fourn: ${o.fourn}</p>
+                    <p>Lieu: BLOC ${o.bloc} - LIGNE ${o.ligne}</p><hr>
                     <p>Poids Brut: ${o.brut} kg | Tare: ${o.tare} kg</p>
-                    <p><strong>POIDS NET LIVRÉ: ${o.net} kg</strong></p>
-                    <p>Taux Réfraction: ${o.refraction}%</p>
-                    <hr>
-                    <p style="font-size: 1.6em; text-align: center;"><strong>NET À PAYER: ${o.paid} kg</strong></p>
-                </div>
-            `;
+                    <p><strong>NET LIVRÉ: ${o.net} kg</strong></p>
+                    <p>Ref: ${o.refraction}% | Grade: ${o.grade}</p><hr>
+                    <p style="font-size:1.6em; text-align:center"><strong>NET PAYER: ${o.paid} KG</strong></p>
+                </div>`;
             window.print();
         }
 
         function exportCSV() {
-            let csv = "AC,Date,Fournisseur,Net_Livre,Refraction,Net_A_Payer\n";
-            db.forEach(o => csv += `${o.ac},${o.date},${o.fourn},${o.net},${o.refraction},${o.paid}\n`);
+            let csv = "AC,Date,Fournisseur,Bloc,Ligne,Poids_Net_Payer,Statut\n";
+            db.forEach(o => csv += `${o.ac},${o.date},${o.fourn},${o.bloc},${o.ligne},${o.paid},${o.statut}\n`);
             const blob = new Blob([csv], { type: 'text/csv' });
             const url = window.URL.createObjectURL(blob);
             const a = document.createElement('a'); a.href = url; a.download = 'logistrack_export.csv'; a.click();
